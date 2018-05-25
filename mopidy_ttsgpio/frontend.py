@@ -4,6 +4,7 @@ import traceback
 from mopidy import core
 
 import pykka
+from datetime import datetime
 
 from .main_menu import MainMenu
 from .tts import TTS
@@ -14,10 +15,12 @@ logger = logging.getLogger(__name__)
 class TtsGpio(pykka.ThreadingActor, core.CoreListener):
 
     def __init__(self, config, core):
+        logger.debug("TTSGPIO: init started")
         super(TtsGpio, self).__init__()
         self.tts = TTS()
         self.menu = False
         self.core = core
+        self.speak_at_start = False
         self.main_menu = MainMenu(self)
 
         self.debug_gpio_simulate = config['ttsgpio']['debug_gpio_simulate']
@@ -27,9 +30,11 @@ class TtsGpio(pykka.ThreadingActor, core.CoreListener):
         else:
             from .gpio_input_manager import GPIOManager
             self.gpio_manager = GPIOManager(self, config['ttsgpio'])
+        logger.debug("TTSGPIO: init finished")
 
     def track_playback_started(self, tl_track):
-        self.speak_current_song(tl_track)
+        if self.speak_at_start:
+            self.speak_current_song(self.core.playback.current_tl_track.get())
 
     def playback_state_changed(self, old_state, new_state):
         if self.debug_gpio_simulate:
@@ -45,19 +50,20 @@ class TtsGpio(pykka.ThreadingActor, core.CoreListener):
 
     def input(self, input_event):
         try:
+            logger.debug("TTSGPIO: input key " + input_event['key'])
             if input_event['key'] == 'volume_up':
                 if input_event['long']:
                     self.repeat()
                 else:
                     current = self.core.playback.volume.get()
-                    current += 10
+                    current += 5
                     self.core.playback.volume = current
             elif input_event['key'] == 'volume_down':
                 if input_event['long']:
                     current = 0
                 else:
                     current = self.core.playback.volume.get()
-                    current -= 10
+                    current -= 5
                 self.core.playback.volume = current
             elif input_event['key'] == 'main' and input_event['long'] \
                     and self.menu:
@@ -73,9 +79,16 @@ class TtsGpio(pykka.ThreadingActor, core.CoreListener):
 
     def manage_input(self, input_event):
         if input_event['key'] == 'next':
-            self.core.playback.next()
+            if input_event['long'] and self.core.playback.state.get() == core.PlaybackState.PLAYING:
+                self.speak_current_song(tl_track)
+            else :
+                self.core.playback.next()
         elif input_event['key'] == 'previous':
-            self.core.playback.previous()
+            if input_event['long']:
+                mytime = datetime.now().strftime("%B %d, %Y the time is %H hours %M minutes")
+                self.tts.speak_text(mytime)
+            else:
+                self.core.playback.previous()
         elif input_event['key'] == 'main':
             if input_event['long']:
                 self.menu = True

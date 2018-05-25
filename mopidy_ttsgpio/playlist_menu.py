@@ -22,8 +22,11 @@ class PlaylistMenu():
 
     def reload_playlists(self):
         self.playlists = []
-        for playlist in self.frontend.core.playlists.playlists.get():
+        logger.debug("TTSGPIO: load playlists")
+        #for playlist in self.frontend.core.playlists.as_list():
+        for playlist in []:
             self.playlists.append(playlist)
+        logger.debug("TTSGPIO: playlists loaded")
         self.selected = 0
 
     def reset(self):
@@ -39,14 +42,19 @@ class PlaylistMenu():
         self.speak_current()
 
     def input(self, input_event):
-        if input_event['key'] == 'previous':
+        logger.debug("TTSGPIO: playlist '" + input_event['key'] + "'")
+        if input_event['key'] == 'next':
+            logger.debug("TTSGPIO: playlist next")
             self.change_current(1)
-        elif input_event['key'] == 'next':
+        if input_event['key'] == 'previous':
+            logger.debug("TTSGPIO: playlist prev")
             self.change_current(-1)
-        elif input_event['key'] == 'main':
+        if input_event['key'] == 'main':
+            logger.debug("TTSGPIO: playlist main")
             core = self.frontend.core
             core.tracklist.clear()
-            core.tracklist.add(uri=self.playlists[self.selected].uri)
+            logger.debug("TTSGPIO: uri " + self.playlists[self.selected].uri)
+            core.tracklist.add(uris=[self.playlists[self.selected].uri])
             core.playback.play()
             self.frontend.exit_menu()
 

@@ -1,12 +1,16 @@
+import logging
 import os
 import socket
+from datetime import datetime
 
 from .on_off_configuration import OnOffConfiguration
 from .playlist_menu import PlaylistMenu
 
+logger = logging.getLogger(__name__)
 
 class MainMenu():
     def __init__(self, frontend):
+        logger.debug("TTSGPIO: mainmenu init")
         self.current = 0
         self.fronted = frontend
         self.main_menu = False
@@ -14,7 +18,8 @@ class MainMenu():
         self.elements.append(OnOffConfiguration('random'))
         self.elements.append('shutdown')
         self.elements.append('reboot')
-        self.elements.append('check ip')
+        self.elements.append('check i p')
+        self.elements.append('what time is it')
 
     def reset(self):
         self.current = 0
@@ -43,8 +48,10 @@ class MainMenu():
             os.system("shutdown now -h")
         elif item == 'reboot':
             os.system("shutdown -r now")
-        elif item == 'check ip':
+        elif item == 'check i.p.':
             self.check_ip()
+        elif item == 'what time is it':
+            self.tell_time()
 
     def change_current(self, move):
         self.current += move
@@ -69,7 +76,11 @@ class MainMenu():
             s.connect(("8.8.8.8", 80))
             ip = s.getsockname()[0]
             s.close()
-            self.fronted.tts.speak_text("Your IP is: " + ip)
+            self.fronted.tts.speak_text("Your I.P. is: " + ip)
         except socket.error:
             s.close()
             self.fronted.tts.speak_text("No internet connection found")
+
+    def tell_time(self):
+        mytime = datetime.now().strftime("%B %d, %Y the time is %H hours %M minutes")
+        self.fronted.tts.speak_text(mytime)

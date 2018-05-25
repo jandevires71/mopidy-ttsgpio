@@ -1,21 +1,13 @@
+import logging
 import os
-from threading import Thread
 import time
-import subprocess
+
+logger = logging.getLogger(__name__)
 
 music_level = 30
 
-
 class TTS():
-	def __init__(self):
-		self.t = Thread(target=self.speak_text_thread)
-		self.t.start()
-
-	def speak_text(self, text):
-		s='(SayText "{0}")\n'.format(text)
-		self.p.stdin.write(s)
-
-	def speak_text_thread(self):
-		self.p = subprocess.Popen('/usr/bin/festival --pipe'.split(),stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-		while 1:
-			time.sleep(1)
+    def speak_text(self, text):
+        logger.debug("TTSGPIO: speak text " + text)
+        s='{0}'.format(text)
+        os.system("echo " + s + "|/usr/bin/flite -voice kal16")

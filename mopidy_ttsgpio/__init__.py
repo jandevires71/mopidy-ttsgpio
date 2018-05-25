@@ -6,7 +6,6 @@ import os
 from mopidy import config, ext
 
 
-
 __version__ = '1.0.1'
 
 
@@ -21,6 +20,7 @@ class Extension(ext.Extension):
 
     def get_default_config(self):
         conf_file = os.path.join(os.path.dirname(__file__), 'ext.conf')
+        logger.debug('TTSGPIO default config read')
         return config.read(conf_file)
 
     def get_config_schema(self):
@@ -33,6 +33,7 @@ class Extension(ext.Extension):
         schema['pin_button_vol_down'] = config.Integer()
         schema['pin_play_led'] = config.Integer()
         schema['tts_default_volume'] = config.Integer()
+        logger.debug('TTSGPIO config loaded')
         return schema
 
     def setup(self, registry):
