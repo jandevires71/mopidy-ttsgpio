@@ -53,7 +53,8 @@ class PlaylistMenu():
             core = self.frontend.core
             core.tracklist.clear()
 
-            playlist = core.playlists.lookup(self.playlists[self.selected])
+            playlist = core.playlists.lookup(self.playlists[self.selected]).get()
+
             core.tracklist.add(playlist.tracks)
             core.tracklist.consume = False
             core.tracklist.single = False
