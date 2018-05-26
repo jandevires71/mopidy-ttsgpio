@@ -53,8 +53,13 @@ class PlaylistMenu():
             logger.debug("TTSGPIO: playlist main")
             core = self.frontend.core
             core.tracklist.clear()
-            logger.debug("TTSGPIO: uri " + self.playlists[self.selected].uri)
-            core.tracklist.add(uris=[self.playlists[self.selected].uri])
+
+            playlist = core.playlists.lookup(self.playlists[self.selected])
+            core.tracklist.add(playlist.tracks)
+            core.tracklist.consume = False
+            core.tracklist.single = False
+            core.tracklist.repeat = True
+
             core.playback.play()
             self.frontend.exit_menu()
 
