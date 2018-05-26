@@ -23,8 +23,7 @@ class PlaylistMenu():
     def reload_playlists(self):
         self.playlists = []
         logger.debug("TTSGPIO: load playlists")
-        #for playlist in self.frontend.core.playlists.as_list():
-        for playlist in []:
+        for playlist in self.frontend.core.playlists.playlists.get():
             self.playlists.append(playlist)
         logger.debug("TTSGPIO: playlists loaded")
         self.selected = 0
