@@ -79,10 +79,9 @@ class TtsGpio(pykka.ThreadingActor, core.CoreListener):
 
     def manage_input(self, input_event):
         if input_event['key'] == 'next':
-            if input_event['long'] and self.core.playback.state.get() == core.PlaybackState.PLAYING:
-                self.speak_current_song(tl_track)
-            else :
+            if not input_event['long']:
                 self.core.playback.next()
+            self.speak_current_song(self.core.playback.current_tl_track.get())
         elif input_event['key'] == 'previous':
             if input_event['long']:
                 mytime = datetime.now().strftime("%B %d, %Y the time is %H hours %M minutes")
