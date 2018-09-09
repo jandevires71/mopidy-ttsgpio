@@ -85,7 +85,12 @@ class TtsGpio(pykka.ThreadingActor, core.CoreListener):
         elif input_event['key'] == 'previous':
             if input_event['long']:
                 mytime = datetime.now().strftime("%B %d, %Y the time is %H hours %M minutes")
+                is_playing = self.is_playing()
+                if (is_playing):
+                    self.core.playback.pause()
                 self.tts.speak_text(mytime)
+                if (is_playing):
+                    self.core.playback.play()
             else:
                 self.core.playback.previous()
         elif input_event['key'] == 'main':
@@ -110,7 +115,17 @@ class TtsGpio(pykka.ThreadingActor, core.CoreListener):
             artists = ""
             for artist in tl_track.track.artists:
                 artists += artist.name + ","
-            self.tts.speak_text(tl_track.track.name + ' by ' + artists)
+            is_playing = self.is_playing()
+            if (is_playing):
+                self.core.playback.pause()
+            self.tts.speak_text(tl_track.track.name)
+            if (artists) :
+                self.tts.speak_text(' by ' + artists)
+            if (is_playing):
+                self.core.playback.play()
+
+    def is_playing(self):
+        return (self.core.playback.state.get() == core.PlaybackState.PLAYING)
 
     def exit_menu(self):
         self.menu = False

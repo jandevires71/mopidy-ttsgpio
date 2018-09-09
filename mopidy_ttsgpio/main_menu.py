@@ -12,7 +12,7 @@ class MainMenu():
     def __init__(self, frontend):
         logger.debug("TTSGPIO: mainmenu init")
         self.current = 0
-        self.fronted = frontend
+        self.frontend = frontend
         self.main_menu = False
         self.elements = [PlaylistMenu(frontend), 'exit mopidy']
         self.elements.append(OnOffConfiguration('random'))
@@ -62,7 +62,12 @@ class MainMenu():
         self.say_current_element()
 
     def say_current_element(self):
-        self.fronted.tts.speak_text(str(self.elements[self.current]))
+        is_playing = self.frontend.is_playing()
+        if (is_playing):
+            self.frontend.core.playback.pause()
+        self.frontend.tts.speak_text(str(self.elements[self.current]))
+        if (is_playing):
+            self.frontend.core.playback.play()
 
     def repeat(self):
         if self.main_menu:
@@ -71,16 +76,30 @@ class MainMenu():
             self.elements[self.current].repeat()
 
     def check_ip(self):
+        is_playing = self.frontend.is_playing()
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             s.connect(("8.8.8.8", 80))
             ip = s.getsockname()[0]
             s.close()
-            self.fronted.tts.speak_text("Your I.P. is: " + ip)
+            if (is_playing):
+                self.frontend.core.playback.pause()
+            self.frontend.tts.speak_text("Your I.P. is: " + ip)
+            if (is_playing):
+                self.frontend.core.playback.play()
         except socket.error:
             s.close()
-            self.fronted.tts.speak_text("No internet connection found")
+            if (is_playing):
+                self.frontend.core.playback.pause()
+            self.frontend.tts.speak_text("No internet connection found")
+            if (is_playing):
+                self.frontend.core.playback.play()
 
     def tell_time(self):
+        is_playing = self.frontend.is_playing()
         mytime = datetime.now().strftime("%B %d, %Y the time is %H hours %M minutes")
-        self.fronted.tts.speak_text(mytime)
+        if (is_playing):
+            self.frontend.core.playback.pause()
+        self.frontend.tts.speak_text(mytime)
+        if (is_playing):
+            self.frontend.core.playback.play()

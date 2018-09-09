@@ -15,10 +15,15 @@ class PlaylistMenu():
         return "playlists"
 
     def speak_current(self):
+        is_playing = self.frontend.is_playing()
+        if (is_playing):
+            self.frontend.core.playback.pause()
         if self.selected < len(self.playlists):
             self.frontend.tts.speak_text(self.playlists[self.selected].name)
         else:
             self.frontend.tts.speak_text("No playlists found")
+        if (is_playing):
+            self.frontend.core.playback.play()
 
     def reload_playlists(self):
         self.playlists = []
@@ -33,12 +38,17 @@ class PlaylistMenu():
         self.speak_current()
 
     def change_current(self, change):
+        is_playing = self.frontend.is_playing()
         self.selected += change
         if self.selected < 0:
             self.selected = len(self.playlists) - 1
         if self.selected >= len(self.playlists):
             self.selected = 0
+        if (is_playing):
+            self.frontend.core.playback.pause()
         self.speak_current()
+        if (is_playing):
+            self.frontend.core.playback.play()
 
     def input(self, input_event):
         logger.debug("TTSGPIO: playlist '" + input_event['key'] + "'")
